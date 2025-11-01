@@ -30,13 +30,14 @@ export function DashboardHero({ balance, netWorth }: HeroProps) {
             <AnimatedNumber
               value={netWorth}
               compact={false}
+              isCents={true}
               prefix="Net Worth: "
             />
           </div>
           <div className="mt-2 text-sm text-zinc-300">
             Cash on hand:
             <span className="ml-2 font-semibold">
-              <AnimatedNumber value={balance} />
+              <AnimatedNumber value={balance} isCents={true} />
             </span>
           </div>
         </motion.div>

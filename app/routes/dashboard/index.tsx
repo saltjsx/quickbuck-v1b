@@ -25,7 +25,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { AnimatedNumber } from "~/components/ui/animated-number";
-import { formatCompactCurrency } from "~/lib/game-utils";
+import { formatCompactCurrency, formatCurrency } from "~/lib/game-utils";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -86,8 +86,8 @@ export default function DashboardPage() {
     return <div className="flex flex-1 flex-col" />;
   }
 
-  const portfolio = Math.max(0, netWorth - balance);
   const totalAssets = balance + stocksValue + cryptoValue + companyEquity;
+  const portfolio = stocksValue + cryptoValue + companyEquity;
   const liquidityRatio = totalAssets > 0 ? (balance / totalAssets) * 100 : 0;
   const portfolioGrowth = 12.5; // Mock growth percentage
   const isPositiveGrowth = portfolioGrowth >= 0;
@@ -223,17 +223,14 @@ export default function DashboardPage() {
                         <AnimatedNumber
                           value={netWorth}
                           compact={true}
+                          isCents={true}
                           className="text-white"
                         />
                       </div>
                       <div className="mt-2 flex items-center gap-2 text-sm">
                         <span className="text-white/70">Cash Available:</span>
                         <span className="font-semibold text-white">
-                          $
-                          {balance.toLocaleString("en-US", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
+                          {formatCurrency(balance)}
                         </span>
                       </div>
                     </div>
@@ -289,6 +286,7 @@ export default function DashboardPage() {
                                 <AnimatedNumber
                                   value={stat.value}
                                   compact={true}
+                                  isCents={true}
                                 />
                               )}
                             </div>
@@ -365,7 +363,11 @@ export default function DashboardPage() {
                         </div>
                         <div className="text-right">
                           <div className="font-semibold">
-                            <AnimatedNumber value={item.value} compact={true} />
+                            <AnimatedNumber
+                              value={item.value}
+                              compact={true}
+                              isCents={true}
+                            />
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {item.percentage.toFixed(1)}%
@@ -494,6 +496,7 @@ export default function DashboardPage() {
                           <AnimatedNumber
                             value={Math.abs(transaction.amount)}
                             compact={true}
+                            isCents={true}
                             prefix={transaction.amount > 0 ? "+" : "-"}
                           />
                         </div>

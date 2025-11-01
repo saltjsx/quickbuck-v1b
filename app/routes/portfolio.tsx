@@ -24,6 +24,8 @@ import type { Route } from "./+types/portfolio";
 import { NetWorthBreakdownModern } from "~/components/dashboard/modern/net-worth-breakdown-modern";
 import { AnimatedNumber } from "~/components/ui/animated-number";
 
+import { motion } from "motion/react";
+
 type SortField = "value" | "amount" | "name";
 type SortOrder = "asc" | "desc";
 
@@ -216,363 +218,445 @@ export default function PortfolioPage() {
     });
   }, [sortedStocks]);
 
+  // Motion variants inspired by the dashboard
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+        delayChildren: 0.15,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 16 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.4,
+        ease: "easeOut",
+      },
+    },
+  };
+
   return (
     <div className="flex flex-1 flex-col">
-      <div className="@container/main flex flex-1 flex-col gap-2">
+      <motion.div
+        className="@container/main flex flex-1 flex-col gap-2"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6">
-          {/* Page Header */}
-          <div className="flex flex-col gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
-              Portfolio
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              A clear overview of your assets, holdings, and allocations.
-            </p>
-          </div>
+          {/* Hero Summary */}
+          <motion.div variants={itemVariants}>
+            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-[#FF934F] to-[#EF7176] text-white shadow-2xl dark:from-[#FF934F] dark:to-[#EF7176]">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-white/5 to-transparent dark:from-black/20 dark:via-black/10 dark:to-transparent" />
+              <div className="absolute -right-32 -top-32 h-64 w-64 rounded-full bg-white/20 blur-3xl dark:bg-black/30" />
+              <div className="absolute -bottom-32 -left-32 h-64 w-64 rounded-full bg-white/20 blur-3xl dark:bg-black/30" />
 
-          {/* Stock Holdings Section */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-muted-foreground" />
-                  <CardTitle>Stock Holdings</CardTitle>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-muted-foreground">Total Value</p>
-                  <div className="text-lg font-semibold text-foreground">
-                    <AnimatedNumber value={totalStockValue} compact={false} />
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {!stockWithDetails || stockWithDetails.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  No stock holdings yet
-                </p>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Stock</TableHead>
-                      <TableHead
-                        className="cursor-pointer hover:bg-muted/50"
-                        onClick={() =>
-                          setStockSort({
-                            field: "amount",
-                            order:
-                              stockSort.field === "amount" &&
-                              stockSort.order === "desc"
-                                ? "asc"
-                                : "desc",
-                          })
-                        }
-                      >
-                        <div className="flex items-center gap-1">
-                          Shares
-                          <ArrowUpDown className="h-3 w-3" />
-                        </div>
-                      </TableHead>
-                      <TableHead>Avg Cost</TableHead>
-                      <TableHead
-                        className="cursor-pointer hover:bg-muted/50"
-                        onClick={() =>
-                          setStockSort({
-                            field: "value",
-                            order:
-                              stockSort.field === "value" &&
-                              stockSort.order === "desc"
-                                ? "asc"
-                                : "desc",
-                          })
-                        }
-                      >
-                        <div className="flex items-center gap-1">
-                          Value
-                          <ArrowUpDown className="h-3 w-3" />
-                        </div>
-                      </TableHead>
-                      <TableHead className="text-right">P/L</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {stockRows.map((item) => (
-                      <TableRow
-                        key={item.portfolio._id}
-                        className="cursor-pointer hover:bg-muted/50"
-                        onClick={() =>
-                          item.stock && navigate(`/stocks/${item.stock.symbol}`)
-                        }
-                      >
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            <span>{item.stock?.symbol}</span>
-                            <Badge
-                              variant="outline"
-                              className="font-mono text-xs"
-                            >
-                              {item.stock?.name}
-                            </Badge>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {item.portfolio.shares.toLocaleString()}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {formatCurrency(item.portfolio.averageCost)}
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {formatCurrency(item.currentValue)}
-                        </TableCell>
-                        <TableCell className="text-right font-medium">
-                          <span
-                            className={
-                              item.gainLoss >= 0
-                                ? "text-green-600"
-                                : "text-red-500"
-                            }
-                          >
-                            {item.gainLoss >= 0 ? "+" : "-"}
-                            {formatCurrency(Math.abs(item.gainLoss))}
-                          </span>
-                          <span className="ml-2 text-xs text-muted-foreground">
-                            ({item.gainLossPercent.toFixed(1)}%)
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    <TableRow className="bg-muted/50 font-bold">
-                      <TableCell colSpan={4}>Total</TableCell>
-                      <TableCell className="text-right">
-                        {formatCurrency(totalStockValue)}
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Holdings Sections */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Coins className="h-5 w-5 text-muted-foreground" />
-                  <CardTitle>Crypto Holdings</CardTitle>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-muted-foreground">Total Value</p>
-                  <div className="text-lg font-semibold text-foreground">
-                    <AnimatedNumber value={totalCryptoValue} compact={false} />
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {!cryptoWithDetails || cryptoWithDetails.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  No crypto holdings yet
-                </p>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Asset</TableHead>
-                      <TableHead
-                        className="cursor-pointer hover:bg-muted/50"
-                        onClick={() =>
-                          setCryptoSort({
-                            field: "amount",
-                            order:
-                              cryptoSort.field === "amount" &&
-                              cryptoSort.order === "desc"
-                                ? "asc"
-                                : "desc",
-                          })
-                        }
-                      >
-                        <div className="flex items-center gap-1">
-                          Tokens
-                          <ArrowUpDown className="h-3 w-3" />
-                        </div>
-                      </TableHead>
-                      <TableHead>Avg Price</TableHead>
-                      <TableHead
-                        className="cursor-pointer hover:bg-muted/50"
-                        onClick={() =>
-                          setCryptoSort({
-                            field: "value",
-                            order:
-                              cryptoSort.field === "value" &&
-                              cryptoSort.order === "desc"
-                                ? "asc"
-                                : "desc",
-                          })
-                        }
-                      >
-                        <div className="flex items-center gap-1">
-                          Value
-                          <ArrowUpDown className="h-3 w-3" />
-                        </div>
-                      </TableHead>
-                      <TableHead className="text-right">P/L</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {cryptoRows.map((item) => (
-                      <TableRow
-                        key={item.holding._id}
-                        className="cursor-pointer hover:bg-muted/50"
-                        onClick={() =>
-                          item.crypto && navigate(`/crypto/${item.crypto._id}`)
-                        }
-                      >
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-2">
-                              <span>{item.crypto?.name}</span>
-                              <Badge variant="outline" className="font-mono">
-                                {item.crypto?.symbol}
-                              </Badge>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {item.holding.balance.toLocaleString()}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {formatCurrency(
-                            item.holding.averagePurchasePrice || 0
-                          )}
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {formatCurrency(item.value)}
-                        </TableCell>
-                        <TableCell className="text-right font-medium">
-                          <span
-                            className={
-                              item.pnl >= 0 ? "text-green-600" : "text-red-500"
-                            }
-                          >
-                            {item.pnl >= 0 ? "+" : "-"}
-                            {formatCurrency(Math.abs(item.pnl))}
-                          </span>
-                          <span className="ml-2 text-xs text-muted-foreground">
-                            ({item.pnlPct.toFixed(1)}%)
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    <TableRow className="bg-muted/50 font-bold">
-                      <TableCell colSpan={4}>Total</TableCell>
-                      <TableCell className="text-right">
-                        {formatCurrency(totalCryptoValue)}
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Net Worth Breakdown */}
-          <NetWorthBreakdownModern
-            cash={totalBalance}
-            stocksValue={totalStockValue}
-            cryptoValue={totalCryptoValue}
-            companyEquity={companyEquity}
-            isLoading={player === undefined}
-          />
-
-          {/* Collections Section (Marketplace Items) */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ShoppingBag className="h-5 w-5 text-muted-foreground" />
-                  <CardTitle>Collections</CardTitle>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-muted-foreground">Total Value</p>
-                  <div className="text-lg font-semibold text-foreground">
-                    <AnimatedNumber
-                      value={
-                        playerInventory?.reduce(
-                          (sum, item) => sum + item.totalPrice,
-                          0
-                        ) || 0
-                      }
-                      compact={false}
-                    />
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {!playerInventory || playerInventory.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  No marketplace items owned yet
-                </p>
-              ) : (
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {playerInventory.map((item) => (
-                    <div
-                      key={item._id}
-                      className="overflow-hidden rounded-lg border"
-                    >
-                      {/* Image Section */}
-                      <div className="relative h-32 w-full bg-muted">
-                        {item.productImage && item.productImage.trim() ? (
-                          <img
-                            src={item.productImage}
-                            alt={item.productName}
-                            className="h-full w-full object-cover"
-                            onError={(e) => {
-                              // Fallback to icon if image fails to load
-                              e.currentTarget.style.display = "none";
-                            }}
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-muted">
-                            <ShoppingBag className="h-8 w-8 text-muted-foreground" />
-                          </div>
-                        )}
+              <CardContent className="relative z-10 p-8">
+                <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="space-y-4">
+                    <div>
+                      <h1 className="text-sm font-medium text-white/70">
+                        Portfolio Value
+                      </h1>
+                      <div className="text-4xl font-bold tracking-tight lg:text-5xl">
+                        <AnimatedNumber
+                          value={
+                            totalBalance +
+                            totalStockValue +
+                            totalCryptoValue +
+                            companyEquity
+                          }
+                          compact={true}
+                          isCents={true}
+                          className="text-white"
+                        />
                       </div>
-                      {/* Info Section */}
-                      <div className="p-3">
-                        <p className="truncate font-medium text-sm">
-                          {item.productName}
-                        </p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {item.companyName}
-                        </p>
-                        <div className="mt-3 flex items-center justify-between">
-                          <div>
-                            <p className="text-xs text-muted-foreground">Qty</p>
-                            <p className="font-semibold text-sm">
-                              {item.quantity}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-xs text-muted-foreground">
-                              Total
-                            </p>
-                            <p className="font-semibold text-sm">
-                              {formatCurrency(item.totalPrice)}
-                            </p>
-                          </div>
-                        </div>
+                      <div className="mt-2 flex items-center gap-2 text-sm">
+                        <span className="text-white/70">Cash Available:</span>
+                        <span className="font-semibold text-white">
+                          {formatCurrency(totalBalance)}
+                        </span>
                       </div>
                     </div>
-                  ))}
+                  </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Stock Holdings Section */}
+          <motion.div variants={itemVariants}>
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-5 w-5 text-muted-foreground" />
+                    <CardTitle>Stock Holdings</CardTitle>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground">Total Value</p>
+                    <div className="text-lg font-semibold text-foreground">
+                      <AnimatedNumber
+                        value={totalStockValue}
+                        compact={false}
+                        isCents={true}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {!stockWithDetails || stockWithDetails.length === 0 ? (
+                  <p className="py-8 text-center text-sm text-muted-foreground">
+                    No stock holdings yet
+                  </p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Stock</TableHead>
+                        <TableHead
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() =>
+                            setStockSort({
+                              field: "amount",
+                              order:
+                                stockSort.field === "amount" &&
+                                stockSort.order === "desc"
+                                  ? "asc"
+                                  : "desc",
+                            })
+                          }
+                        >
+                          <div className="flex items-center gap-1">
+                            Shares
+                            <ArrowUpDown className="h-3 w-3" />
+                          </div>
+                        </TableHead>
+                        <TableHead>Avg Cost</TableHead>
+                        <TableHead
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() =>
+                            setStockSort({
+                              field: "value",
+                              order:
+                                stockSort.field === "value" &&
+                                stockSort.order === "desc"
+                                  ? "asc"
+                                  : "desc",
+                            })
+                          }
+                        >
+                          <div className="flex items-center gap-1">
+                            Value
+                            <ArrowUpDown className="h-3 w-3" />
+                          </div>
+                        </TableHead>
+                        <TableHead className="text-right">P/L</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {stockRows.map((item) => (
+                        <TableRow
+                          key={item.portfolio._id}
+                          className="cursor-pointer transition-colors hover:bg-muted/50"
+                          onClick={() =>
+                            item.stock &&
+                            navigate(`/stocks/${item.stock.symbol}`)
+                          }
+                        >
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              <span>{item.stock?.symbol}</span>
+                              <Badge
+                                variant="outline"
+                                className="font-mono text-xs"
+                              >
+                                {item.stock?.name}
+                              </Badge>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {item.portfolio.shares.toLocaleString()}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {formatCurrency(item.portfolio.averageCost)}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {formatCurrency(item.currentValue)}
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            <span
+                              className={
+                                item.gainLoss >= 0
+                                  ? "text-green-600"
+                                  : "text-red-500"
+                              }
+                            >
+                              {item.gainLoss >= 0 ? "+" : "-"}
+                              {formatCurrency(Math.abs(item.gainLoss))}
+                            </span>
+                            <span className="ml-2 text-xs text-muted-foreground">
+                              ({item.gainLossPercent.toFixed(1)}%)
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow className="bg-muted/50 font-bold">
+                        <TableCell colSpan={4}>Total</TableCell>
+                        <TableCell className="text-right">
+                          {formatCurrency(totalStockValue)}
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Crypto Holdings */}
+          <motion.div variants={itemVariants}>
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Coins className="h-5 w-5 text-muted-foreground" />
+                    <CardTitle>Crypto Holdings</CardTitle>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground">Total Value</p>
+                    <div className="text-lg font-semibold text-foreground">
+                      <AnimatedNumber
+                        value={totalCryptoValue}
+                        compact={false}
+                        isCents={true}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {!cryptoWithDetails || cryptoWithDetails.length === 0 ? (
+                  <p className="py-8 text-center text-sm text-muted-foreground">
+                    No crypto holdings yet
+                  </p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Asset</TableHead>
+                        <TableHead
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() =>
+                            setCryptoSort({
+                              field: "amount",
+                              order:
+                                cryptoSort.field === "amount" &&
+                                cryptoSort.order === "desc"
+                                  ? "asc"
+                                  : "desc",
+                            })
+                          }
+                        >
+                          <div className="flex items-center gap-1">
+                            Tokens
+                            <ArrowUpDown className="h-3 w-3" />
+                          </div>
+                        </TableHead>
+                        <TableHead>Avg Price</TableHead>
+                        <TableHead
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() =>
+                            setCryptoSort({
+                              field: "value",
+                              order:
+                                cryptoSort.field === "value" &&
+                                cryptoSort.order === "desc"
+                                  ? "asc"
+                                  : "desc",
+                            })
+                          }
+                        >
+                          <div className="flex items-center gap-1">
+                            Value
+                            <ArrowUpDown className="h-3 w-3" />
+                          </div>
+                        </TableHead>
+                        <TableHead className="text-right">P/L</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {cryptoRows.map((item) => (
+                        <TableRow
+                          key={item.holding._id}
+                          className="cursor-pointer transition-colors hover:bg-muted/50"
+                          onClick={() =>
+                            item.crypto &&
+                            navigate(`/crypto/${item.crypto._id}`)
+                          }
+                        >
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2">
+                                <span>{item.crypto?.name}</span>
+                                <Badge variant="outline" className="font-mono">
+                                  {item.crypto?.symbol}
+                                </Badge>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {item.holding.balance.toLocaleString()}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {formatCurrency(
+                              item.holding.averagePurchasePrice || 0
+                            )}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {formatCurrency(item.value)}
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            <span
+                              className={
+                                item.pnl >= 0
+                                  ? "text-green-600"
+                                  : "text-red-500"
+                              }
+                            >
+                              {item.pnl >= 0 ? "+" : "-"}
+                              {formatCurrency(Math.abs(item.pnl))}
+                            </span>
+                            <span className="ml-2 text-xs text-muted-foreground">
+                              ({item.pnlPct.toFixed(1)}%)
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow className="bg-muted/50 font-bold">
+                        <TableCell colSpan={4}>Total</TableCell>
+                        <TableCell className="text-right">
+                          {formatCurrency(totalCryptoValue)}
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Net Worth Breakdown */}
+          <motion.div variants={itemVariants}>
+            <NetWorthBreakdownModern
+              cash={totalBalance}
+              stocksValue={totalStockValue}
+              cryptoValue={totalCryptoValue}
+              companyEquity={companyEquity}
+              isLoading={player === undefined}
+            />
+          </motion.div>
+
+          {/* Collections Section (Marketplace Items) */}
+          <motion.div variants={itemVariants}>
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ShoppingBag className="h-5 w-5 text-muted-foreground" />
+                    <CardTitle>Collections</CardTitle>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground">Total Value</p>
+                    <div className="text-lg font-semibold text-foreground">
+                      <AnimatedNumber
+                        value={
+                          playerInventory?.reduce(
+                            (sum, item) => sum + item.totalPrice,
+                            0
+                          ) || 0
+                        }
+                        compact={false}
+                        isCents={true}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {!playerInventory || playerInventory.length === 0 ? (
+                  <p className="py-8 text-center text-sm text-muted-foreground">
+                    No marketplace items owned yet
+                  </p>
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {playerInventory.map((item) => (
+                      <div
+                        key={item._id}
+                        className="overflow-hidden rounded-lg border"
+                      >
+                        {/* Image Section */}
+                        <div className="relative h-32 w-full bg-muted">
+                          {item.productImage && item.productImage.trim() ? (
+                            <img
+                              src={item.productImage}
+                              alt={item.productName}
+                              className="h-full w-full object-cover"
+                              onError={(e) => {
+                                // Fallback to icon if image fails to load
+                                e.currentTarget.style.display = "none";
+                              }}
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-muted">
+                              <ShoppingBag className="h-8 w-8 text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
+                        {/* Info Section */}
+                        <div className="p-3">
+                          <p className="truncate text-sm font-medium">
+                            {item.productName}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {item.companyName}
+                          </p>
+                          <div className="mt-3 flex items-center justify-between">
+                            <div>
+                              <p className="text-xs text-muted-foreground">
+                                Qty
+                              </p>
+                              <p className="text-sm font-semibold">
+                                {item.quantity}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs text-muted-foreground">
+                                Total
+                              </p>
+                              <p className="text-sm font-semibold">
+                                {formatCurrency(item.totalPrice)}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

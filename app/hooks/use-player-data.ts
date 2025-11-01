@@ -9,7 +9,7 @@ export function usePlayerData(clerkUserId: string | null) {
   // Mutations for user and player creation
   const upsertUser = useMutation(api.users.upsertUser);
   const getOrCreatePlayer = useMutation(api.players.getOrCreatePlayer);
-  
+
   // First, get the Convex user ID by looking up the token identifier
   const user = useQuery(
     api.users.findUserByToken,
@@ -43,7 +43,7 @@ export function usePlayerData(clerkUserId: string | null) {
     player ? { playerId: player._id } : "skip"
   );
 
-  // Get player net worth  
+  // Get player net worth
   const netWorth = useQuery(
     api.players.getPlayerNetWorth,
     player ? { playerId: player._id } : "skip"
@@ -52,6 +52,12 @@ export function usePlayerData(clerkUserId: string | null) {
   // Get crypto holdings for net worth breakdown
   const cryptoHoldings = useQuery(
     api.portfolio.getUserCryptoHoldings,
+    player ? { userId: player._id } : "skip"
+  );
+
+  // Get stock holdings for net worth breakdown
+  const stockHoldings = useQuery(
+    api.portfolio.getUserStockHoldings,
     player ? { userId: player._id } : "skip"
   );
 
@@ -74,15 +80,32 @@ export function usePlayerData(clerkUserId: string | null) {
   const cryptoValue =
     cryptoHoldings && allCryptos
       ? cryptoHoldings.reduce((sum: number, holding: any) => {
-          const crypto = allCryptos.find((c: any) => c._id === holding.cryptoId);
-          return sum + (crypto ? Math.floor(holding.balance * crypto.currentPrice) : 0);
+          const crypto = allCryptos.find(
+            (c: any) => c._id === holding.cryptoId
+          );
+          return (
+            sum +
+            (crypto ? Math.floor(holding.balance * crypto.currentPrice) : 0)
+          );
         }, 0)
       : 0;
 
-  // Calculate company equity (sum of all owned companies' balances)
+  // Calculate stock value
+  const stocksValue = stockHoldings
+    ? stockHoldings.reduce((sum: number, holding: any) => {
+        return sum + (holding.currentValue || 0);
+      }, 0)
+    : 0;
+
+  // Calculate company equity (sum of all owned companies' balances + market cap for public companies)
   const companyEquity = playerCompanies
     ? playerCompanies.reduce((sum, company) => {
-        return sum + company.balance;
+        let value = company.balance;
+        // Add market cap for public companies
+        if (company.isPublic && company.marketCap) {
+          value += company.marketCap;
+        }
+        return sum + value;
       }, 0)
     : 0;
 
@@ -90,7 +113,7 @@ export function usePlayerData(clerkUserId: string | null) {
     player,
     balance: balance ?? 0,
     netWorth: netWorth ?? 0,
-    stocksValue: 0,
+    stocksValue,
     cryptoValue,
     companyEquity,
     transactions: transactions ?? [],
