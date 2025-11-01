@@ -30,76 +30,106 @@ import { ThemeToggle } from "~/components/ui/theme-toggle";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 
-const baseNavItems = [
+const sidebarGroups = [
   {
-    title: "Dashboard",
-    url: "/dashboard",
-    icon: LayoutDashboard,
+    title: "Overview",
+    items: [
+      {
+        title: "Dashboard",
+        url: "/dashboard",
+        icon: LayoutDashboard,
+      },
+      {
+        title: "Portfolio",
+        url: "/portfolio",
+        icon: Briefcase,
+      },
+      {
+        title: "Leaderboard",
+        url: "/leaderboard",
+        icon: Trophy,
+      },
+    ],
   },
   {
-    title: "Portfolio",
-    url: "/portfolio",
-    icon: Briefcase,
+    title: "Investments",
+    items: [
+      {
+        title: "Stocks",
+        url: "/stocks",
+        icon: TrendingUp,
+      },
+      {
+        title: "Crypto",
+        url: "/crypto",
+        icon: Bitcoin,
+      },
+      {
+        title: "Companies",
+        url: "/companies",
+        icon: Building2,
+      },
+    ],
   },
   {
-    title: "Stocks",
-    url: "/stocks",
-    icon: TrendingUp,
-  },
-  {
-    title: "Crypto",
-    url: "/crypto",
-    icon: Bitcoin,
+    title: "Banking",
+    items: [
+      {
+        title: "Accounts",
+        url: "/accounts",
+        icon: Wallet,
+      },
+      {
+        title: "Transfers",
+        url: "/transfers",
+        icon: ArrowLeftRight,
+      },
+      {
+        title: "Transactions",
+        url: "/transactions",
+        icon: Receipt,
+      },
+      {
+        title: "Loans",
+        url: "/loans",
+        icon: CreditCard,
+      },
+    ],
   },
   {
     title: "Marketplace",
-    url: "/marketplace",
-    icon: ShoppingCart,
+    items: [
+      {
+        title: "Shop",
+        url: "/marketplace",
+        icon: ShoppingCart,
+      },
+      {
+        title: "Companies",
+        url: "/company-marketplace",
+        icon: Store,
+      },
+    ],
   },
   {
-    title: "Leaderboard",
-    url: "/leaderboard",
-    icon: Trophy,
+    title: "Entertainment",
+    items: [
+      {
+        title: "Casino",
+        url: "/gamble",
+        icon: Dice5,
+      },
+    ],
   },
   {
-    title: "Accounts",
-    url: "/accounts",
-    icon: Wallet,
-  },
-  {
-    title: "Transfers",
-    url: "/transfers",
-    icon: ArrowLeftRight,
-  },
-  {
-    title: "Transactions",
-    url: "/transactions",
-    icon: Receipt,
-  },
-  {
-    title: "Loans",
-    url: "/loans",
-    icon: CreditCard,
-  },
-  {
-    title: "Companies",
-    url: "/companies",
-    icon: Building2,
-  },
-  {
-    title: "Company Marketplace",
-    url: "/company-marketplace",
-    icon: Store,
-  },
-  {
-    title: "Casino",
-    url: "/gamble",
-    icon: Dice5,
-  },
-  {
-    title: "Upgrades",
-    url: "/upgrades",
-    icon: Bolt,
+    title: "System",
+    items: [
+      {
+        title: "Upgrades",
+        url: "/upgrades",
+        icon: Bolt,
+      },
+    ],
   },
 ];
 
@@ -114,16 +144,21 @@ export function AppSidebar({
   const moderationAccess = useQuery(api.moderation?.checkModerationAccess);
 
   // Add moderation panel link if user is mod or admin
-  const navItems = moderationAccess?.hasAccess
+  const groups = moderationAccess?.hasAccess
     ? [
-        ...baseNavItems,
+        ...sidebarGroups,
         {
-          title: "Mod Panel",
-          url: "/panel",
-          icon: Shield,
+          title: "Admin",
+          items: [
+            {
+              title: "Mod Panel",
+              url: "/panel",
+              icon: Shield,
+            },
+          ],
         },
       ]
-    : baseNavItems;
+    : sidebarGroups;
 
   return (
     <Sidebar collapsible="offcanvas" variant={variant}>
@@ -159,7 +194,7 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navItems} />
+        <NavMain groups={groups} />
       </SidebarContent>
       <SidebarFooter>
         <div className="flex items-center justify-between gap-2 px-2">
