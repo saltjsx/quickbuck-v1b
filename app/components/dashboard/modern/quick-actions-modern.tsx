@@ -12,7 +12,7 @@ export function QuickActionsModern() {
       title: "Manage Companies",
       description: "Create and manage your companies",
       icon: Building2,
-      href: "/dashboard/companies",
+      href: "/companies",
     },
     {
       title: "Browse Marketplace",

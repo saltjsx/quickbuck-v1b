@@ -172,7 +172,7 @@ export default function DashboardPage() {
       title: "Manage Companies",
       description: "Create and manage your companies",
       icon: Building2,
-      href: "/dashboard/companies",
+      href: "/companies",
       color: "text-purple-600 dark:text-purple-400",
       bgColor: "bg-purple-50 dark:bg-purple-950/50",
     },
@@ -185,10 +185,10 @@ export default function DashboardPage() {
       bgColor: "bg-emerald-50 dark:bg-emerald-950/50",
     },
     {
-      title: "View Analytics",
+      title: "View Portfolio",
       description: "Track your financial performance",
       icon: BarChart3,
-      href: "/dashboard/analytics",
+      href: "/portfolio",
       color: "text-orange-600 dark:text-orange-400",
       bgColor: "bg-orange-50 dark:bg-orange-950/50",
     },
@@ -243,7 +243,7 @@ export default function DashboardPage() {
                         Trade Now
                       </Button>
                     </Link>
-                    <Link to="/dashboard/companies">
+                    <Link to="/companies">
                       <Button
                         variant="outline"
                         className="w-full border-white/20 bg-transparent text-white hover:bg-white/10"

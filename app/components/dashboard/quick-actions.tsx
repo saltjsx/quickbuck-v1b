@@ -11,7 +11,7 @@ export function QuickActions() {
       title: "Manage Companies",
       description: "Create and manage your companies",
       icon: Building2,
-      href: "/dashboard/companies",
+      href: "/companies",
       color: "text-blue-500",
     },
     {

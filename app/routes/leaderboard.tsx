@@ -24,6 +24,8 @@ import { getAuth } from "@clerk/react-router/ssr.server";
 import { redirect } from "react-router";
 import type { Route } from "./+types/leaderboard";
 import { cn } from "~/lib/utils";
+import { motion } from "motion/react";
+import { AnimatedNumber } from "~/components/ui/animated-number";
 
 export async function loader(args: Route.LoaderArgs) {
   const { userId } = await getAuth(args);
@@ -41,6 +43,38 @@ type SortConfig = {
 };
 
 export default function LeaderboardPage() {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut",
+      },
+    },
+  };
+
+  const cardHoverVariants = {
+    hover: {
+      scale: 1.02,
+      transition: {
+        duration: 0.2,
+        ease: "easeInOut",
+      },
+    },
+  };
   const { userId: clerkUserId } = useAuth();
   const upsertUser = useMutation(api.users.upsertUser);
 
@@ -53,7 +87,7 @@ export default function LeaderboardPage() {
     direction: "desc",
   });
   const [companySort, setCompanySort] = useState<SortConfig>({
-    key: "marketCap",
+    key: "balance",
     direction: "desc",
   });
   const [productSort, setProductSort] = useState<SortConfig>({
@@ -91,7 +125,7 @@ export default function LeaderboardPage() {
     limit: 100,
   });
   const allCompanies = useQuery(api.leaderboard.getAllCompaniesSorted, {
-    sortBy: "marketCap",
+    sortBy: "balance",
     limit: 100,
   });
   const allProducts = useQuery(api.leaderboard.getAllProductsSorted, {
@@ -140,10 +174,8 @@ export default function LeaderboardPage() {
     if (!allCompanies?.companies) return [];
     let filtered = allCompanies.companies;
     if (companySearchQuery) {
-      filtered = filtered.filter(
-        (c) =>
-          c.name?.toLowerCase().includes(companySearchQuery.toLowerCase()) ||
-          c.ticker?.toLowerCase().includes(companySearchQuery.toLowerCase())
+      filtered = filtered.filter((c) =>
+        c.name?.toLowerCase().includes(companySearchQuery.toLowerCase())
       );
     }
 
@@ -153,10 +185,6 @@ export default function LeaderboardPage() {
       let bVal: number | undefined;
 
       switch (companySort.key) {
-        case "marketCap":
-          aVal = a.marketCap;
-          bVal = b.marketCap;
-          break;
         case "balance":
           aVal = a.balance;
           bVal = b.balance;
@@ -166,8 +194,8 @@ export default function LeaderboardPage() {
             ? a.name.localeCompare(b.name)
             : b.name.localeCompare(a.name);
         default:
-          aVal = a.marketCap;
-          bVal = b.marketCap;
+          aVal = a.balance;
+          bVal = b.balance;
       }
 
       if (companySort.direction === "asc") {
@@ -271,12 +299,56 @@ export default function LeaderboardPage() {
     <div className="flex flex-1 flex-col">
       <div className="@container/main flex flex-1 flex-col gap-2">
         <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Leaderboard</h1>
-            <p className="text-muted-foreground">
-              See how you stack up against other players and companies.
-            </p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-[#FF934F] to-[#EF7176] text-white shadow-2xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-white/5 to-transparent dark:from-black/20 dark:via-black/10 dark:to-transparent" />
+              <div className="absolute -right-32 -top-32 h-64 w-64 rounded-full bg-white/20 blur-3xl dark:bg-black/30" />
+              <div className="absolute -bottom-32 -left-32 h-64 w-64 rounded-full bg-white/20 blur-3xl dark:bg-black/30" />
+              <CardContent className="relative z-10 p-6 md:p-8">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                  <div className="space-y-1">
+                    <h1 className="text-3xl font-bold tracking-tight">
+                      Leaderboard
+                    </h1>
+                    <p className="text-white/80 text-sm">
+                      See how you stack up against other players and companies.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                    <div className="rounded-lg bg-white/10 p-3 backdrop-blur-sm">
+                      <p className="text-xs text-white/80">
+                        Top Player Net Worth
+                      </p>
+                      <div className="text-xl font-bold">
+                        <AnimatedNumber
+                          value={topPlayersByNetWorth?.[0]?.netWorth ?? 0}
+                          compact={true}
+                          isCents={true}
+                          className="text-white"
+                        />
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-white/10 p-3 backdrop-blur-sm">
+                      <p className="text-xs text-white/80">
+                        Top Company Balance
+                      </p>
+                      <div className="text-xl font-bold">
+                        <AnimatedNumber
+                          value={topCompaniesByMarketCap?.[0]?.balance ?? 0}
+                          compact={true}
+                          isCents={true}
+                          className="text-white"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
           {/* Top 5 Sections */}
           <Tabs defaultValue="tops" className="w-full">
@@ -321,9 +393,12 @@ export default function LeaderboardPage() {
                     ) : (
                       <div className="space-y-3">
                         {topPlayersByBalance.map((player, index) => (
-                          <div
+                          <motion.div
                             key={player._id}
                             className="flex items-center justify-between"
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            whileHover={{ scale: 1.01 }}
                           >
                             <div className="flex items-center gap-2">
                               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
@@ -339,9 +414,13 @@ export default function LeaderboardPage() {
                               </span>
                             </div>
                             <span className="text-sm font-semibold text-green-600">
-                              {formatCompactCurrency(player.balance)}
+                              <AnimatedNumber
+                                value={player.balance}
+                                compact={true}
+                                isCents={true}
+                              />
                             </span>
-                          </div>
+                          </motion.div>
                         ))}
                       </div>
                     )}
@@ -379,9 +458,12 @@ export default function LeaderboardPage() {
                     ) : (
                       <div className="space-y-3">
                         {topPlayersByNetWorth.map((player, index) => (
-                          <div
+                          <motion.div
                             key={player._id}
                             className="flex items-center justify-between"
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            whileHover={{ scale: 1.01 }}
                           >
                             <div className="flex items-center gap-2">
                               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
@@ -397,9 +479,13 @@ export default function LeaderboardPage() {
                               </span>
                             </div>
                             <span className="text-sm font-semibold text-blue-600">
-                              {formatCompactCurrency(player.netWorth)}
+                              <AnimatedNumber
+                                value={player.netWorth}
+                                compact={true}
+                                isCents={true}
+                              />
                             </span>
-                          </div>
+                          </motion.div>
                         ))}
                       </div>
                     )}
@@ -410,7 +496,7 @@ export default function LeaderboardPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">
-                      Top 5 Companies by Market Cap
+                      Top 5 Public Companies by Balance
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -440,9 +526,12 @@ export default function LeaderboardPage() {
                     ) : (
                       <div className="space-y-3">
                         {topCompaniesByMarketCap.map((company, index) => (
-                          <div
+                          <motion.div
                             key={company._id}
                             className="flex items-center justify-between"
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            whileHover={{ scale: 1.01 }}
                           >
                             <div className="flex items-center gap-2">
                               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
@@ -458,14 +547,18 @@ export default function LeaderboardPage() {
                                   {company.name}
                                 </span>
                                 <span className="text-xs text-muted-foreground">
-                                  {company.ticker}
+                                  Owner: {company.ownerName}
                                 </span>
                               </div>
                             </div>
                             <span className="text-sm font-semibold text-purple-600">
-                              {formatCompactCurrency(company.marketCap || 0)}
+                              <AnimatedNumber
+                                value={company.balance}
+                                compact={true}
+                                isCents={true}
+                              />
                             </span>
-                          </div>
+                          </motion.div>
                         ))}
                       </div>
                     )}
@@ -506,9 +599,12 @@ export default function LeaderboardPage() {
                     ) : (
                       <div className="space-y-3">
                         {topCompaniesByBalance.map((company, index) => (
-                          <div
+                          <motion.div
                             key={company._id}
                             className="flex items-center justify-between"
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            whileHover={{ scale: 1.01 }}
                           >
                             <div className="flex items-center gap-2">
                               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
@@ -524,14 +620,18 @@ export default function LeaderboardPage() {
                                   {company.name}
                                 </span>
                                 <span className="text-xs text-muted-foreground">
-                                  {company.ticker || "Private"}
+                                  Owner: {company.ownerName}
                                 </span>
                               </div>
                             </div>
                             <span className="text-sm font-semibold text-green-600">
-                              {formatCompactCurrency(company.balance)}
+                              <AnimatedNumber
+                                value={company.balance}
+                                compact={true}
+                                isCents={true}
+                              />
                             </span>
-                          </div>
+                          </motion.div>
                         ))}
                       </div>
                     )}
@@ -609,7 +709,10 @@ export default function LeaderboardPage() {
                       </TableRow>
                     ) : (
                       filteredPlayers.map((player, index) => (
-                        <TableRow key={player._id}>
+                        <TableRow
+                          key={player._id}
+                          className="transition-colors hover:bg-muted/50"
+                        >
                           <TableCell className="font-medium">
                             {index + 1}
                           </TableCell>
@@ -624,10 +727,18 @@ export default function LeaderboardPage() {
                             </div>
                           </TableCell>
                           <TableCell className="text-right font-medium text-green-600">
-                            {formatCurrency(player.balance)}
+                            <AnimatedNumber
+                              value={player.balance}
+                              compact={false}
+                              isCents={true}
+                            />
                           </TableCell>
                           <TableCell className="text-right font-semibold text-blue-600">
-                            {formatCurrency(player.netWorth)}
+                            <AnimatedNumber
+                              value={player.netWorth}
+                              compact={false}
+                              isCents={true}
+                            />
                           </TableCell>
                         </TableRow>
                       ))
@@ -656,14 +767,7 @@ export default function LeaderboardPage() {
                     <TableRow>
                       <TableHead className="w-12">Rank</TableHead>
                       <TableHead>Company</TableHead>
-                      <TableHead>Ticker</TableHead>
-                      <SortableHeader
-                        sortKey="marketCap"
-                        currentSort={companySort}
-                        onSort={setCompanySort}
-                      >
-                        Market Cap
-                      </SortableHeader>
+                      <TableHead>Public</TableHead>
                       <SortableHeader
                         sortKey="balance"
                         currentSort={companySort}
@@ -671,6 +775,7 @@ export default function LeaderboardPage() {
                       >
                         Balance
                       </SortableHeader>
+                      <TableHead>Owner</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -710,7 +815,10 @@ export default function LeaderboardPage() {
                       </TableRow>
                     ) : (
                       filteredCompanies.map((company, index) => (
-                        <TableRow key={company._id}>
+                        <TableRow
+                          key={company._id}
+                          className="transition-colors hover:bg-muted/50"
+                        >
                           <TableCell className="font-medium">
                             {index + 1}
                           </TableCell>
@@ -732,13 +840,17 @@ export default function LeaderboardPage() {
                             </div>
                           </TableCell>
                           <TableCell className="font-mono text-xs">
-                            {company.ticker || "N/A"}
+                            {company.isPublic ? "Yes" : "No"}
                           </TableCell>
                           <TableCell className="text-right font-medium text-purple-600">
-                            {formatCurrency(company.marketCap || 0)}
+                            <AnimatedNumber
+                              value={company.balance}
+                              compact={false}
+                              isCents={true}
+                            />
                           </TableCell>
-                          <TableCell className="text-right font-medium text-green-600">
-                            {formatCurrency(company.balance)}
+                          <TableCell className="text-right font-medium">
+                            {company.ownerName}
                           </TableCell>
                         </TableRow>
                       ))
@@ -775,7 +887,7 @@ export default function LeaderboardPage() {
                       >
                         Total Revenue
                       </SortableHeader>
-                      <TableHead className="text-right">Stock</TableHead>
+                      <TableHead className="text-right">Sold</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -815,7 +927,10 @@ export default function LeaderboardPage() {
                       </TableRow>
                     ) : (
                       filteredProducts.map((product, index) => (
-                        <TableRow key={product._id}>
+                        <TableRow
+                          key={product._id}
+                          className="transition-colors hover:bg-muted/50"
+                        >
                           <TableCell className="font-medium">
                             {index + 1}
                           </TableCell>
@@ -825,7 +940,11 @@ export default function LeaderboardPage() {
                                 {product.name}
                               </span>
                               <span className="text-xs text-muted-foreground">
-                                ${product.price?.toFixed(2)}
+                                <AnimatedNumber
+                                  value={product.price ?? 0}
+                                  compact={false}
+                                  isCents={true}
+                                />
                               </span>
                             </div>
                           </TableCell>
@@ -840,17 +959,18 @@ export default function LeaderboardPage() {
                                 <span className="text-sm">
                                   {product.companyName}
                                 </span>
-                                <span className="text-xs font-mono text-muted-foreground">
-                                  {product.ticker}
-                                </span>
                               </div>
                             </div>
                           </TableCell>
                           <TableCell className="text-right font-semibold text-green-600">
-                            {formatCurrency(product.totalRevenue)}
+                            <AnimatedNumber
+                              value={product.totalRevenue}
+                              compact={false}
+                              isCents={true}
+                            />
                           </TableCell>
                           <TableCell className="text-right">
-                            {product.stock || 0}
+                            {product.totalSold || 0}
                           </TableCell>
                         </TableRow>
                       ))
