@@ -14,6 +14,20 @@ import { useAuth } from "@clerk/react-router";
  * These notifications will not disappear until the user accepts, rejects, or counter-offers
  */
 export function CompanyOfferNotifications() {
+  return <CompanyOfferNotificationsWrapper />;
+}
+
+function CompanyOfferNotificationsWrapper() {
+  try {
+    return <CompanyOfferNotificationsInner />;
+  } catch {
+    // If we're not in a context where useAuth is available (e.g., landing page),
+    // don't render notifications
+    return null;
+  }
+}
+
+function CompanyOfferNotificationsInner() {
   const { userId: clerkUserId } = useAuth();
 
   // Get user and player

@@ -7,6 +7,7 @@ import {
 
 export default [
   index("routes/home.tsx"),
+  route("home", "routes/landing.tsx"),
   route("sign-in/*", "routes/sign-in.tsx"),
   route("sign-up/*", "routes/sign-up.tsx"),
   route("success", "routes/success.tsx"),
