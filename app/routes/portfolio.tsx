@@ -696,7 +696,7 @@ export default function PortfolioPage() {
                                     className="cursor-pointer transition-colors hover:bg-muted/50"
                                     onClick={() =>
                                       item.crypto &&
-                                      navigate(`/crypto/${item.crypto._id}`)
+                                      navigate(`/crypto/${item.crypto.symbol}`)
                                     }
                                   >
                                     <TableCell className="font-medium">
