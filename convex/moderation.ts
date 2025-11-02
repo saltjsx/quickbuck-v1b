@@ -1089,9 +1089,19 @@ export const getAllProductsForModeration = query({
     const limit = Math.min(args.limit || 50, 200); // Default 50, max 200
     const offset = args.offset || 0;
 
-    // Use pagination to reduce bandwidth
-    const allProducts = await ctx.db.query("products").collect();
-    const products = allProducts.slice(offset, offset + limit);
+    // Use pagination to reduce bandwidth - fetch only what we need
+    const allProducts = await ctx.db
+      .query("products")
+      .withIndex("by_totalRevenue")
+      .order("desc")
+      .take(offset + limit);
+    const products = allProducts.slice(offset);
+
+    // Get total count efficiently
+    const total = await ctx.db
+      .query("products")
+      .collect()
+      .then((p) => p.length);
 
     // Enrich with company data - only return needed fields
     const enrichedProducts = await Promise.all(
@@ -1116,7 +1126,7 @@ export const getAllProductsForModeration = query({
 
     return {
       products: enrichedProducts,
-      total: allProducts.length,
+      total,
       offset,
       limit,
     };

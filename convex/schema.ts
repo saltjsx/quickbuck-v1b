@@ -11,31 +11,39 @@ export default defineSchema({
   })
     .index("by_token", ["tokenIdentifier"])
     .index("by_email", ["email"]),
-  
+
   // Game tables
   players: defineTable({
     userId: v.id("users"),
     balance: v.number(), // in cents
     netWorth: v.number(), // in cents, calculated field
-    role: v.optional(v.union(
-      v.literal("normal"),
-      v.literal("limited"),
-      v.literal("banned"),
-      v.literal("mod"),
-      v.literal("admin")
-    )), // Player role - defaults to "normal"
+    role: v.optional(
+      v.union(
+        v.literal("normal"),
+        v.literal("limited"),
+        v.literal("banned"),
+        v.literal("mod"),
+        v.literal("admin")
+      )
+    ), // Player role - defaults to "normal"
     limitReason: v.optional(v.string()), // Reason for limited account
     banReason: v.optional(v.string()), // Reason for ban
-    warnings: v.optional(v.array(v.object({
-      reason: v.string(),
-      createdAt: v.number(),
-    }))), // List of warnings
+    warnings: v.optional(
+      v.array(
+        v.object({
+          reason: v.string(),
+          createdAt: v.number(),
+        })
+      )
+    ), // List of warnings
     warningCount: v.optional(v.number()), // Total warnings (for quick access)
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_userId", ["userId"])
-    .index("by_role", ["role"]),
+    .index("by_role", ["role"])
+    .index("by_balance", ["balance"])
+    .index("by_netWorth", ["netWorth"]),
 
   companies: defineTable({
     ownerId: v.id("players"),
@@ -56,7 +64,8 @@ export default defineSchema({
     sharesOutstanding: v.optional(v.number()),
   })
     .index("by_ownerId", ["ownerId"])
-    .index("by_isPublic", ["isPublic"]),
+    .index("by_isPublic", ["isPublic"])
+    .index("by_marketCap", ["marketCap"]),
 
   products: defineTable({
     companyId: v.id("companies"),
@@ -81,17 +90,16 @@ export default defineSchema({
   })
     .index("by_companyId", ["companyId"])
     .index("by_isActive", ["isActive"])
-    .index("by_price", ["price"]),
-
-
+    .index("by_price", ["price"])
+    .index("by_totalRevenue", ["totalRevenue"])
+    .index("by_isActive_totalRevenue", ["isActive", "totalRevenue"]),
 
   carts: defineTable({
     userId: v.id("players"),
     totalPrice: v.number(), // in cents
     createdAt: v.number(),
     updatedAt: v.number(),
-  })
-    .index("by_userId", ["userId"]),
+  }).index("by_userId", ["userId"]),
 
   cartItems: defineTable({
     cartId: v.id("carts"),
@@ -122,7 +130,9 @@ export default defineSchema({
     .index("by_fromAccountId", ["fromAccountId"])
     .index("by_toAccountId", ["toAccountId"])
     .index("by_createdAt", ["createdAt"])
-    .index("by_linkedLoanId", ["linkedLoanId"]),
+    .index("by_linkedLoanId", ["linkedLoanId"])
+    .index("by_fromAccountId_assetType", ["fromAccountId", "assetType"])
+    .index("by_fromAccountId_createdAt", ["fromAccountId", "createdAt"]),
 
   loans: defineTable({
     playerId: v.id("players"),
@@ -133,7 +143,11 @@ export default defineSchema({
     createdAt: v.number(),
     dueDate: v.optional(v.number()),
     lastInterestApplied: v.number(),
-    status: v.union(v.literal("active"), v.literal("paid"), v.literal("defaulted")),
+    status: v.union(
+      v.literal("active"),
+      v.literal("paid"),
+      v.literal("defaulted")
+    ),
     idempotencyKey: v.optional(v.string()), // For duplicate request detection
   })
     .index("by_playerId", ["playerId"])
@@ -226,8 +240,6 @@ export default defineSchema({
     .index("by_timestamp", ["timestamp"])
     .index("by_tickNumber", ["tickNumber"]),
 
-
-
   // Upgrades system
   upgrades: defineTable({
     playerId: v.id("players"),
@@ -266,8 +278,7 @@ export default defineSchema({
     key: v.string(),
     value: v.any(),
     updatedAt: v.number(),
-  })
-    .index("by_key", ["key"]),
+  }).index("by_key", ["key"]),
 
   // Player marketplace inventory
   playerInventory: defineTable({
@@ -318,12 +329,16 @@ export default defineSchema({
     createdBy: v.id("players"), // admin who created it
     title: v.string(),
     message: v.string(),
-    type: v.union(v.literal("info"), v.literal("warning"), v.literal("success"), v.literal("error")), // alert type/color
+    type: v.union(
+      v.literal("info"),
+      v.literal("warning"),
+      v.literal("success"),
+      v.literal("error")
+    ), // alert type/color
     readBy: v.optional(v.array(v.id("players"))), // players who have seen it (starts empty)
     sentAt: v.number(), // timestamp when sent
     createdAt: v.number(),
-  })
-    .index("by_sentAt", ["sentAt"]),
+  }).index("by_sentAt", ["sentAt"]),
 
   // Active blackjack games
   blackjackGames: defineTable({

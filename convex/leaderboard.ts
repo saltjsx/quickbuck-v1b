@@ -4,7 +4,7 @@ import { calculateNetWorth } from "./players";
 
 /**
  * Leaderboard query functions for top players and companies
- * 
+ *
  * Net worth calculation includes:
  * - Player cash balance
  * - Stock holdings value
@@ -12,15 +12,13 @@ import { calculateNetWorth } from "./players";
  * - Company equity (balance + market cap for public companies)
  */
 
-
-
 // Top 5 players by balance
 export const getTopPlayersByBalance = query({
   args: { limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
     const { limit = 5 } = args;
     const players = await ctx.db.query("players").collect();
-    
+
     // Sort by balance descending and take top N
     const sorted = players
       .sort((a, b) => b.balance - a.balance)
@@ -49,7 +47,7 @@ export const getTopPlayersByNetWorth = query({
   handler: async (ctx, args) => {
     const { limit = 5 } = args;
     const players = await ctx.db.query("players").collect();
-    
+
     // Calculate net worth for all players (including company equity)
     const playersWithNetWorth = await Promise.all(
       players.map(async (player) => {
@@ -86,7 +84,7 @@ export const getTopCompaniesByMarketCap = query({
   handler: async (ctx, args) => {
     const { limit = 5 } = args;
     const companies = await ctx.db.query("companies").collect();
-    
+
     // Filter public companies, sort by balance descending and take top N
     // Note: Market cap system removed - companies now ranked by balance
     const sorted = companies
@@ -117,7 +115,7 @@ export const getTopCompaniesByBalance = query({
   handler: async (ctx, args) => {
     const { limit = 5 } = args;
     const companies = await ctx.db.query("companies").collect();
-    
+
     // Sort by balance descending and take top N
     const sorted = companies
       .sort((a, b) => b.balance - a.balance)
@@ -151,25 +149,27 @@ export const getAllPlayersSorted = query({
     const { sortBy = "netWorth", limit = 50, offset = 0 } = args;
     // Limit to max 100 to prevent excessive bandwidth
     const safeLimit = Math.min(limit, 100);
-    const players = await ctx.db.query("players").take(500); // Limit initial fetch
 
-    let sorted;
+    let players;
 
     if (sortBy === "balance") {
-      sorted = players.sort((a, b) => b.balance - a.balance);
+      // Use index for efficient sorting by balance
+      players = await ctx.db
+        .query("players")
+        .withIndex("by_balance")
+        .order("desc")
+        .take(offset + safeLimit);
     } else {
-      // For netWorth, calculate it for each player (including company equity)
-      const playersWithNetWorth = await Promise.all(
-        players.map(async (player) => {
-          const netWorth = await calculateNetWorth(ctx, player._id);
-          return { ...player, netWorth };
-        })
-      );
-      sorted = playersWithNetWorth.sort((a, b) => b.netWorth - a.netWorth);
+      // Use index for efficient sorting by netWorth
+      players = await ctx.db
+        .query("players")
+        .withIndex("by_netWorth")
+        .order("desc")
+        .take(offset + safeLimit);
     }
 
-    // Apply pagination
-    const paginated = sorted.slice(offset, offset + safeLimit);
+    // Apply pagination after fetch
+    const paginated = players.slice(offset, offset + safeLimit);
 
     // Enrich with user info - only return needed fields
     const enriched = await Promise.all(
@@ -178,7 +178,7 @@ export const getAllPlayersSorted = query({
         return {
           _id: player._id,
           balance: player.balance,
-          netWorth: (player as any).netWorth,
+          netWorth: player.netWorth,
           userName: user?.name || "Anonymous",
           userImage: user?.image,
           rank: offset + index + 1,
@@ -205,18 +205,23 @@ export const getAllCompaniesSorted = query({
   handler: async (ctx, args) => {
     const { sortBy = "marketCap", limit = 50, offset = 0 } = args;
     const safeLimit = Math.min(limit, 100); // Max 100 per query
-    const companies = await ctx.db.query("companies").take(500); // Limit initial fetch
 
-    // Sort companies
-    const sorted = companies.sort((a, b) => {
-      const field = sortBy as keyof typeof a;
-      const aVal = (a[field] as number) || 0;
-      const bVal = (b[field] as number) || 0;
-      return bVal - aVal;
-    });
+    // Use index for efficient sorting
+    let companies;
+    if (sortBy === "balance") {
+      companies = await ctx.db.query("companies").take(offset + safeLimit);
+      companies.sort((a, b) => b.balance - a.balance);
+    } else {
+      // Use marketCap index
+      companies = await ctx.db
+        .query("companies")
+        .withIndex("by_marketCap")
+        .order("desc")
+        .take(offset + safeLimit);
+    }
 
     // Apply pagination
-    const paginated = sorted.slice(offset, offset + safeLimit);
+    const paginated = companies.slice(offset, offset + safeLimit);
 
     // Enrich with owner info - only return needed fields
     const enriched = await Promise.all(
@@ -254,16 +259,20 @@ export const getAllProductsSorted = query({
   handler: async (ctx, args) => {
     const { limit = 50, offset = 0 } = args;
     const safeLimit = Math.min(limit, 100); // Max 100 per query
-    const products = await ctx.db.query("products").take(500); // Limit initial fetch
 
-    // Sort by revenue descending
-    const sorted = products
-      .sort((a, b) => b.totalRevenue - a.totalRevenue)
-      .slice(offset, offset + safeLimit);
+    // Use index for efficient sorting by totalRevenue
+    const products = await ctx.db
+      .query("products")
+      .withIndex("by_totalRevenue")
+      .order("desc")
+      .take(offset + safeLimit);
+
+    // Apply pagination after fetch
+    const paginated = products.slice(offset, offset + safeLimit);
 
     // Enrich with company info - only return needed fields
     const enriched = await Promise.all(
-      sorted.map(async (product, index) => {
+      paginated.map(async (product, index) => {
         const company = await ctx.db.get(product.companyId);
         return {
           _id: product._id,
@@ -281,7 +290,7 @@ export const getAllProductsSorted = query({
 
     return {
       products: enriched,
-      total: products.length,
+      total: Math.min(products.length, 500),
       offset,
       limit: safeLimit,
     };

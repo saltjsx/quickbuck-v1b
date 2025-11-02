@@ -554,13 +554,13 @@ export const getAllProducts = query({
     const limit = Math.min(args.limit || 100, 200); // Default 100, max 200
     const offset = args.offset || 0;
 
-    // Fetch with pagination
+    // Fetch with pagination directly - use index and order for efficiency
     const allProducts = await ctx.db
       .query("products")
       .withIndex("by_isActive", (q) => q.eq("isActive", true))
-      .take(1000); // Max 1000 total to prevent excessive queries
+      .take(offset + limit); // Only fetch what we need
 
-    const paginatedProducts = allProducts.slice(offset, offset + limit);
+    const paginatedProducts = allProducts.slice(offset);
 
     // Return only essential fields for marketplace display
     return paginatedProducts.map((p) => ({
@@ -680,12 +680,12 @@ export const getProductBatchOrders = query({
   handler: async (ctx, args) => {
     const limit = Math.min(args.limit || 20, 50); // Default 20, max 50
 
+    // Use compound index for efficient filtering
     const transactions = await ctx.db
       .query("transactions")
-      .withIndex("by_fromAccountId", (q) =>
-        q.eq("fromAccountId", args.companyId)
+      .withIndex("by_fromAccountId_assetType", (q) =>
+        q.eq("fromAccountId", args.companyId).eq("assetType", "product")
       )
-      .filter((q) => q.eq(q.field("assetType"), "product"))
       .order("desc")
       .take(limit);
 
