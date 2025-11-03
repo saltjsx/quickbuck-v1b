@@ -1449,7 +1449,7 @@ export default function CompanyDashboardPage() {
                                 type="number"
                                 min="0"
                                 max="100"
-                                step="0.1"
+                                step="any"
                                 placeholder="0"
                                 value={productAllocations[product._id] || ""}
                                 onChange={(e) =>
