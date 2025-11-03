@@ -1480,40 +1480,110 @@ export default function Panel() {
       </div>
 
       <style>{`
+        :root {
+          --panel-bg: #008080;
+          --panel-text: #000000;
+          --header-bg: #000080;
+          --header-text: #ffffff;
+          --button-bg: #c0c0c0;
+          --button-border: #ffffff;
+          --button-text: #000000;
+          --button-hover: #a0a0a0;
+          --content-bg: #ffffff;
+          --content-text: #000000;
+          --content-border: #808080;
+          --table-header-bg: #000080;
+          --table-header-text: #ffffff;
+          --table-odd-bg: #f0f0f0;
+          --table-hover-bg: #ffffcc;
+          --table-border: #c0c0c0;
+          --modal-bg: #c0c0c0;
+          --modal-border: #000000;
+          --modal-shadow: #808080;
+          --input-bg: #ffffff;
+          --input-text: #000000;
+          --input-border: #dfdfdf;
+          --warning-yellow: #ffff00;
+          --alert-info-bg: #e6f2ff;
+          --alert-success-bg: #e6ffe6;
+          --alert-warning-bg: #fff9e6;
+          --alert-error-bg: #ffe6e6;
+          --text-secondary: #808080;
+          --text-warning: #ff8c00;
+          --text-error: #ff0000;
+          --text-success: #008000;
+        }
+
+        .dark {
+          --panel-bg: #2a2a2a;
+          --panel-text: #e0e0e0;
+          --header-bg: #1a1a1a;
+          --header-text: #e0e0e0;
+          --button-bg: #404040;
+          --button-border: #606060;
+          --button-text: #e0e0e0;
+          --button-hover: #505050;
+          --content-bg: #333333;
+          --content-text: #e0e0e0;
+          --content-border: #505050;
+          --table-header-bg: #1a1a1a;
+          --table-header-text: #e0e0e0;
+          --table-odd-bg: #3a3a3a;
+          --table-hover-bg: #454545;
+          --table-border: #505050;
+          --modal-bg: #404040;
+          --modal-border: #606060;
+          --modal-shadow: #000000;
+          --input-bg: #3a3a3a;
+          --input-text: #e0e0e0;
+          --input-border: #505050;
+          --warning-yellow: #ffff99;
+          --alert-info-bg: #1a3a5a;
+          --alert-success-bg: #1a5a1a;
+          --alert-warning-bg: #5a4a1a;
+          --alert-error-bg: #5a1a1a;
+          --text-secondary: #a0a0a0;
+          --text-warning: #ffb366;
+          --text-error: #ff6666;
+          --text-success: #66ff66;
+        }
+
         .retro-panel {
           min-height: 100vh;
-          background: #008080;
+          background: var(--panel-bg);
+          color: var(--panel-text);
           font-family: "MS Sans Serif", "Tahoma", sans-serif;
           padding: 20px;
         }
 
         .retro-header {
-          background: #000080;
-          color: #ffffff;
+          background: var(--header-bg);
+          color: var(--header-text);
           padding: 15px;
           margin-bottom: 20px;
-          border: 3px ridge #ffffff;
+          border: 3px ridge var(--button-border);
           text-align: center;
         }
 
         .retro-header h1 {
           margin: 0 0 10px 0;
           font-size: 24px;
-          text-shadow: 2px 2px #000000;
+          text-shadow: 2px 2px rgba(0, 0, 0, 0.5);
         }
 
         .role-badge {
           margin: 10px 0;
           font-size: 14px;
+          color: var(--header-text);
         }
 
         .retro-button {
           display: inline-block;
           margin-top: 10px;
           padding: 6px 12px;
-          background: #c0c0c0;
-          border: 2px outset #ffffff;
-          color: #000000;
+          background: var(--button-bg);
+          border: 2px outset var(--button-border);
+          color: var(--button-text);
           text-decoration: none;
           font-weight: bold;
           cursor: pointer;
@@ -1521,7 +1591,7 @@ export default function Panel() {
         }
 
         .retro-button:hover {
-          background: #a0a0a0;
+          background: var(--button-hover);
         }
 
         .retro-button:active {
@@ -1529,13 +1599,14 @@ export default function Panel() {
         }
 
         .action-message {
-          background: #ffff00;
+          background: var(--warning-yellow);
           border: 3px solid #000000;
           padding: 10px;
           margin-bottom: 20px;
           text-align: center;
           font-weight: bold;
-          box-shadow: 3px 3px 0 #808080;
+          box-shadow: 3px 3px 0 var(--modal-shadow);
+          color: #000000;
         }
 
         .retro-tabs {
@@ -1547,32 +1618,35 @@ export default function Panel() {
         .retro-tab {
           flex: 1;
           padding: 10px;
-          background: #c0c0c0;
-          border: 2px outset #ffffff;
+          background: var(--button-bg);
+          border: 2px outset var(--button-border);
           cursor: pointer;
           font-weight: bold;
           font-size: 14px;
+          color: var(--button-text);
         }
 
         .retro-tab:hover {
-          background: #d0d0d0;
+          background: var(--button-hover);
         }
 
         .retro-tab.active {
-          background: #ffffff;
+          background: var(--content-bg);
           border-style: inset;
+          color: var(--content-text);
         }
 
         .retro-content {
-          background: #ffffff;
-          border: 3px ridge #808080;
+          background: var(--content-bg);
+          border: 3px ridge var(--content-border);
           padding: 20px;
           min-height: 500px;
+          color: var(--content-text);
         }
 
         .retro-content h2 {
-          color: #000080;
-          border-bottom: 2px solid #000080;
+          color: var(--header-bg);
+          border-bottom: 2px solid var(--header-bg);
           padding-bottom: 5px;
           margin-bottom: 15px;
         }
@@ -1581,12 +1655,13 @@ export default function Panel() {
           width: 100%;
           border-collapse: collapse;
           border: 2px solid #000000;
-          background: #ffffff;
+          background: var(--content-bg);
+          color: var(--content-text);
         }
 
         .retro-table th {
-          background: #000080;
-          color: #ffffff;
+          background: var(--table-header-bg);
+          color: var(--table-header-text);
           padding: 8px;
           text-align: left;
           border: 1px solid #000000;
@@ -1595,15 +1670,16 @@ export default function Panel() {
 
         .retro-table td {
           padding: 8px;
-          border: 1px solid #c0c0c0;
+          border: 1px solid var(--table-border);
+          color: var(--content-text);
         }
 
         .retro-table tbody tr:nth-child(even) {
-          background: #f0f0f0;
+          background: var(--table-odd-bg);
         }
 
         .retro-table tbody tr:hover {
-          background: #ffffcc;
+          background: var(--table-hover-bg);
         }
 
         .role-tag {
@@ -1615,25 +1691,25 @@ export default function Panel() {
         }
 
         .role-normal {
-          background: #c0c0c0;
-          border-color: #808080;
-          color: #000000;
+          background: var(--button-bg);
+          border-color: var(--text-secondary);
+          color: var(--button-text);
         }
 
         .role-limited {
-          background: #ffff00;
-          border-color: #ff8c00;
+          background: var(--warning-yellow);
+          border-color: var(--text-warning);
           color: #000000;
         }
 
         .role-banned {
-          background: #ff0000;
+          background: var(--text-error);
           border-color: #800000;
           color: #ffffff;
         }
 
         .role-mod {
-          background: #00ff00;
+          background: var(--text-success);
           border-color: #008000;
           color: #000000;
         }
@@ -1646,11 +1722,11 @@ export default function Panel() {
 
         .status-info {
           font-size: 12px;
-          color: #800000;
+          color: var(--text-warning);
         }
 
         .status-ok {
-          color: #008000;
+          color: var(--text-success);
           font-weight: bold;
         }
 
@@ -1663,9 +1739,11 @@ export default function Panel() {
         .btn-small {
           padding: 4px 8px;
           font-size: 11px;
-          border: 2px outset #ffffff;
+          border: 2px outset var(--button-border);
           cursor: pointer;
           font-weight: bold;
+          background: var(--button-bg);
+          color: var(--button-text);
         }
 
         .btn-small:hover {
@@ -1677,17 +1755,17 @@ export default function Panel() {
         }
 
         .btn-warn {
-          background: #ffff00;
+          background: var(--warning-yellow);
           color: #000000;
         }
 
         .btn-danger {
-          background: #ff0000;
+          background: var(--text-error);
           color: #ffffff;
         }
 
         .btn-success {
-          background: #00ff00;
+          background: var(--text-success);
           color: #000000;
         }
 
@@ -1699,7 +1777,7 @@ export default function Panel() {
         .loading, .no-data {
           text-align: center;
           padding: 40px;
-          color: #808080;
+          color: var(--text-secondary);
           font-style: italic;
         }
 
@@ -1721,12 +1799,13 @@ export default function Panel() {
         }
 
         .warning-modal-box {
-          background: #c0c0c0;
-          border: 3px solid #000000;
+          background: var(--modal-bg);
+          border: 3px solid var(--modal-border);
           padding: 20px;
           max-width: 400px;
           width: 90%;
-          box-shadow: 5px 5px 0 #808080;
+          box-shadow: 5px 5px 0 var(--modal-shadow);
+          color: var(--content-text);
         }
 
         .view-warnings-box {
@@ -1735,7 +1814,7 @@ export default function Panel() {
 
         .warning-modal-box h3 {
           margin-top: 0;
-          color: #000080;
+          color: var(--header-bg);
           font-size: 16px;
         }
 
@@ -1743,7 +1822,7 @@ export default function Panel() {
           display: block;
           margin: 15px 0 5px 0;
           font-weight: bold;
-          color: #000000;
+          color: var(--content-text);
         }
 
         .warning-modal-box input[type="text"],
@@ -1751,9 +1830,9 @@ export default function Panel() {
           width: 100%;
           padding: 5px;
           font-family: "MS Sans Serif", "Tahoma", sans-serif;
-          border: 2px inset #dfdfdf;
-          background: #ffffff;
-          color: #000000;
+          border: 2px inset var(--input-border);
+          background: var(--input-bg);
+          color: var(--input-text);
           box-sizing: border-box;
         }
 
@@ -1771,11 +1850,12 @@ export default function Panel() {
 
         .warning-modal-buttons button {
           padding: 6px 16px;
-          background: #c0c0c0;
-          border: 2px outset #dfdfdf;
+          background: var(--button-bg);
+          border: 2px outset var(--input-border);
           cursor: pointer;
           font-weight: bold;
           font-family: "MS Sans Serif", "Tahoma", sans-serif;
+          color: var(--button-text);
         }
 
         .warning-modal-buttons button:hover {
@@ -1787,18 +1867,19 @@ export default function Panel() {
         }
 
         .warning-modal-buttons .btn-submit {
-          background: #00ff00;
+          background: var(--text-success);
           border-color: #008000;
+          color: #000000;
         }
 
         .warning-modal-buttons .btn-cancel {
-          background: #ff0000;
+          background: var(--text-error);
           border-color: #800000;
           color: #ffffff;
         }
 
         .warning-modal-buttons .btn-danger-action {
-          background: #ff0000;
+          background: var(--text-error);
           border-color: #800000;
           color: #ffffff;
         }
@@ -1807,16 +1888,17 @@ export default function Panel() {
           max-height: 400px;
           overflow-y: auto;
           margin: 15px 0;
-          border: 2px inset #dfdfdf;
-          background: #ffffff;
+          border: 2px inset var(--input-border);
+          background: var(--input-bg);
           padding: 10px;
         }
 
         .warning-item {
-          background: #ffffe0;
-          border: 2px solid #ffa500;
+          background: var(--alert-warning-bg);
+          border: 2px solid var(--text-warning);
           padding: 10px;
           margin-bottom: 10px;
+          color: var(--content-text);
         }
 
         .warning-header {
@@ -1827,31 +1909,31 @@ export default function Panel() {
         }
 
         .warning-number {
-          color: #ff0000;
+          color: var(--text-error);
         }
 
         .warning-date {
-          color: #808080;
+          color: var(--text-secondary);
           font-size: 12px;
         }
 
         .warning-reason {
-          color: #000000;
+          color: var(--content-text);
           margin-bottom: 5px;
           padding: 5px;
-          background: #ffffff;
-          border: 1px solid #c0c0c0;
+          background: var(--input-bg);
+          border: 1px solid var(--table-border);
         }
 
         .no-warnings-text {
           text-align: center;
-          color: #808080;
+          color: var(--text-secondary);
           font-style: italic;
           padding: 20px;
         }
 
         .warning-count {
-          color: #ff8c00;
+          color: var(--text-warning);
           font-weight: bold;
         }
 
@@ -1861,11 +1943,11 @@ export default function Panel() {
         }
 
         .warning-count.clickable:hover {
-          color: #ff0000;
+          color: var(--text-error);
         }
 
         .no-warnings {
-          color: #808080;
+          color: var(--text-secondary);
         }
 
         /* Alert Modal Styles */
@@ -1887,19 +1969,20 @@ export default function Panel() {
         }
 
         .alert-modal-box {
-          background: #c0c0c0;
-          border: 3px solid #000000;
+          background: var(--modal-bg);
+          border: 3px solid var(--modal-border);
           padding: 20px;
           max-width: 600px;
           width: 90%;
-          box-shadow: 5px 5px 0 #808080;
+          box-shadow: 5px 5px 0 var(--modal-shadow);
           max-height: 90vh;
           overflow-y: auto;
+          color: var(--content-text);
         }
 
         .alert-modal-box h3 {
           margin-top: 0;
-          color: #000080;
+          color: var(--header-bg);
           font-size: 16px;
         }
 
@@ -1907,7 +1990,7 @@ export default function Panel() {
           display: block;
           margin: 15px 0 5px 0;
           font-weight: bold;
-          color: #000000;
+          color: var(--content-text);
         }
 
         .alert-modal-box input[type="text"],
@@ -1916,9 +1999,9 @@ export default function Panel() {
           width: 100%;
           padding: 5px;
           font-family: "MS Sans Serif", "Tahoma", sans-serif;
-          border: 2px inset #dfdfdf;
-          background: #ffffff;
-          color: #000000;
+          border: 2px inset var(--input-border);
+          background: var(--input-bg);
+          color: var(--input-text);
           box-sizing: border-box;
           margin-bottom: 5px;
         }
@@ -1930,7 +2013,7 @@ export default function Panel() {
 
         .char-count {
           font-size: 11px;
-          color: #808080;
+          color: var(--text-secondary);
           text-align: right;
           margin-bottom: 10px;
         }
@@ -1938,14 +2021,14 @@ export default function Panel() {
         .alert-preview {
           margin: 20px 0;
           padding: 10px;
-          background: #f0f0f0;
-          border: 2px inset #dfdfdf;
+          background: var(--table-odd-bg);
+          border: 2px inset var(--input-border);
         }
 
         .alert-preview .alert-label {
           font-weight: bold;
           margin-bottom: 10px;
-          color: #000080;
+          color: var(--header-bg);
         }
 
         .alert-modal-buttons {
@@ -1957,11 +2040,12 @@ export default function Panel() {
 
         .alert-modal-buttons button {
           padding: 6px 16px;
-          background: #c0c0c0;
-          border: 2px outset #dfdfdf;
+          background: var(--button-bg);
+          border: 2px outset var(--input-border);
           cursor: pointer;
           font-weight: bold;
           font-family: "MS Sans Serif", "Tahoma", sans-serif;
+          color: var(--button-text);
         }
 
         .alert-modal-buttons button:hover:not(:disabled) {
@@ -1978,20 +2062,21 @@ export default function Panel() {
         }
 
         .alert-modal-buttons .btn-submit {
-          background: #00ff00;
+          background: var(--text-success);
           border-color: #008000;
+          color: #000000;
         }
 
         .alert-modal-buttons .btn-cancel {
-          background: #ff0000;
+          background: var(--text-error);
           border-color: #800000;
           color: #ffffff;
         }
 
         /* Alerts Section Styles */
         .alerts-section h2 {
-          color: #000080;
-          border-bottom: 2px solid #000080;
+          color: var(--header-bg);
+          border-bottom: 2px solid var(--header-bg);
           padding-bottom: 5px;
           margin-bottom: 15px;
         }
@@ -2022,27 +2107,28 @@ export default function Panel() {
           border: 2px solid;
           padding: 12px;
           border-radius: 2px;
-          background: #ffffff;
+          background: var(--content-bg);
+          color: var(--content-text);
         }
 
         .alert-item.alert-info {
           border-color: #0000ff;
-          background: #e6f2ff;
+          background: var(--alert-info-bg);
         }
 
         .alert-item.alert-success {
           border-color: #008000;
-          background: #e6ffe6;
+          background: var(--alert-success-bg);
         }
 
         .alert-item.alert-warning {
-          border-color: #ff8c00;
-          background: #fff9e6;
+          border-color: var(--text-warning);
+          background: var(--alert-warning-bg);
         }
 
         .alert-item.alert-error {
-          border-color: #ff0000;
-          background: #ffe6e6;
+          border-color: var(--text-error);
+          background: var(--alert-error-bg);
         }
 
         .alert-item .alert-header {
@@ -2053,7 +2139,7 @@ export default function Panel() {
         }
 
         .alert-item .alert-header strong {
-          color: #000000;
+          color: var(--content-text);
           font-size: 14px;
         }
 
@@ -2062,8 +2148,8 @@ export default function Panel() {
           font-size: 11px;
           font-weight: bold;
           padding: 2px 6px;
-          background: #c0c0c0;
-          border: 1px solid #808080;
+          background: var(--button-bg);
+          border: 1px solid var(--text-secondary);
         }
 
         .alert-item.alert-info .alert-type {
@@ -2077,18 +2163,18 @@ export default function Panel() {
         }
 
         .alert-item.alert-warning .alert-type {
-          background: #ff8c00;
-          color: #ffffff;
+          background: var(--text-warning);
+          color: #000000;
         }
 
         .alert-item.alert-error .alert-type {
-          background: #ff0000;
+          background: var(--text-error);
           color: #ffffff;
         }
 
         .alert-message {
           margin: 8px 0;
-          color: #000000;
+          color: var(--content-text);
           white-space: pre-wrap;
           word-wrap: break-word;
           line-height: 1.4;
@@ -2098,9 +2184,9 @@ export default function Panel() {
           display: flex;
           justify-content: space-between;
           font-size: 11px;
-          color: #808080;
+          color: var(--text-secondary);
           margin-top: 8px;
-          border-top: 1px solid #c0c0c0;
+          border-top: 1px solid var(--table-border);
           padding-top: 8px;
         }
 
@@ -2112,6 +2198,16 @@ export default function Panel() {
 
         .btn-primary:hover {
           background: #0060df;
+        }
+
+        .btn-info {
+          background: #00ffff;
+          color: #000000;
+        }
+
+        .dark .btn-info {
+          background: #00cccc;
+          color: #000000;
         }
       `}</style>
     </div>
